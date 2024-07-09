@@ -1,9 +1,9 @@
 import './App.css'
-import {useGarageState} from "./hooks/use-garage-state.ts";
+import {useGarageReducer} from "./hooks/use-garage-reducer.ts";
 import {useState} from "react";
 
 function App() {
-  const [garage, dispatch] = useGarageState(3);
+  const [garage, dispatch] = useGarageReducer(3);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 

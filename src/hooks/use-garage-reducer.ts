@@ -55,7 +55,7 @@ const reducer = (state: GarageState, action: GarageAction) => {
   });
 };
 
-export const useGarageState = (totalSpots: number) => {
+export const useGarageReducer = (totalSpots: number) => {
   const [state, dispatch] = useReducer(reducer, {
     totalSpots,
     occupants: [],
