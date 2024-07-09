@@ -1,4 +1,5 @@
 import {produce} from "immer";
+import {useReducer} from "react";
 
 type Spot = {
   licensePlate: string,
@@ -10,27 +11,30 @@ type GarageState = {
   occupants: Spot[],
 };
 
-const GarageUpdateDispatch: Record<string, string> = {
+const GarageUpdate: Record<string, string> = {
   CHECK_IN: 'CHECK_IN',
   CHECK_OUT: 'CHECK_OUT',
 }
 
-type GarageUpdateDispatchType = typeof GarageUpdateDispatch[keyof typeof GarageUpdateDispatch]
+type GarageUpdateType = typeof GarageUpdate[keyof typeof GarageUpdate]
 
-export type GarageUpdateDispatchAction = {
-  type: GarageUpdateDispatchType,
-  payload: {
-    licensePlate: string,
-  },
+type GarageUpdateResult = {
+  success: boolean,
+  message?: string,
+};
+
+export type GarageAction = {
+  type: GarageUpdateType,
+  licensePlate: string,
 }
 
-const reducer = (state: GarageState, action: GarageUpdateDispatchAction) => {
+const reducer = (state: GarageState, action: GarageAction) => {
   return produce(state, (draft) => {
     switch (action.type) {
-      case GarageUpdateDispatch.CHECK_IN:
+      case GarageUpdate.CHECK_IN:
         if (draft.occupants.length < draft.totalSpots) {
           const newSpot: Spot = {
-            licensePlate: action.payload.licensePlate,
+            licensePlate: action.licensePlate,
             entryTime: Date.now(),
           };
 
@@ -38,8 +42,8 @@ const reducer = (state: GarageState, action: GarageUpdateDispatchAction) => {
         }
         break;
 
-      case GarageUpdateDispatch.CHECK_OUT:
-        const index = draft.occupants.findIndex((spot) => spot.licensePlate === action.payload.licensePlate);
+      case GarageUpdate.CHECK_OUT:
+        const index = draft.occupants.findIndex((spot) => spot.licensePlate === action.licensePlate);
         if (index !== -1) {
           draft.occupants.splice(index, 1);
         }
@@ -49,4 +53,58 @@ const reducer = (state: GarageState, action: GarageUpdateDispatchAction) => {
         break;
     }
   });
-}
+};
+
+export const useGarageState = (totalSpots: number) => {
+  const [state, dispatch] = useReducer(reducer, {
+    totalSpots,
+    occupants: [],
+  });
+
+  const manager = (action: GarageAction): GarageUpdateResult => {
+    switch (action.type) {
+      case GarageUpdate.CHECK_IN:
+        if (state.occupants.length >= state.totalSpots) {
+          return {
+            success: false,
+            message: 'No more spots.',
+          }
+        }
+
+        if (!action.licensePlate.length) {
+          return {
+            success: false,
+            message: 'Missing license plate',
+          };
+        }
+
+        dispatch(action);
+
+        return {
+          success: true,
+        };
+
+        case GarageUpdate.CHECK_OUT:
+          const index = state.occupants.findIndex((spot) => spot.licensePlate === action.licensePlate);
+          if (index === -1) {
+            return {
+              success: false,
+              message: 'No such car is parked here.',
+            };
+          }
+
+          dispatch(action);
+          return {
+            success: true,
+          };
+
+      default:
+        return {
+          success: false,
+          message: 'No such action.',
+        };
+    }
+  };
+
+  return [state, manager];
+};
