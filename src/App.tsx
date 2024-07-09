@@ -9,7 +9,7 @@ function App() {
 
   return (
     <>
-      <div>3 parking spots left</div>
+      <div>{garage.totalSpots - garage.occupants.length} parking spots left</div>
       <button>Check in car</button>
       <button>Check out car</button>
       <button>Details</button>

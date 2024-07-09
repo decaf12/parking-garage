@@ -6,7 +6,7 @@ type Spot = {
   entryTime: number,
 }
 
-type GarageState = {
+export type GarageState = {
   totalSpots: number,
   occupants: Spot[],
 };
@@ -55,7 +55,7 @@ const reducer = (state: GarageState, action: GarageAction) => {
   });
 };
 
-export const useGarageReducer = (totalSpots: number) => {
+export const useGarageReducer = (totalSpots: number): [GarageState, (action: GarageAction) => GarageUpdateResult] => {
   const [state, dispatch] = useReducer(reducer, {
     totalSpots,
     occupants: [],
