@@ -1,13 +1,14 @@
-import {Controller, SubmitHandler, useForm} from "react-hook-form";
+import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
 import {DatePicker, Input, Form} from "antd";
 import dayjs, {Dayjs} from "dayjs";
+import {GarageActionPayload, GarageUpdateResult} from "../hooks/use-garage-reducer.ts";
+import {useCallback, useState} from "react";
 
 type Props = {
   timestampLabel: string,
-  onSubmit: SubmitHandler<ParkingFormData>,
-  onClear: () => void,
+  getSubmissionResult: (payload: GarageActionPayload) => GarageUpdateResult,
 };
 
 const parkingFormValidationSchema = z.object({
@@ -15,18 +16,30 @@ const parkingFormValidationSchema = z.object({
   timestamp: z.custom<Dayjs>((val) => val instanceof dayjs, 'Invalid date'),
 });
 
-export type ParkingFormData = z.infer<typeof parkingFormValidationSchema>;
-
-export const ParkingForm = ({onSubmit, timestampLabel}: Props) => {
-  const {control, reset, handleSubmit, formState: {errors}} = useForm<ParkingFormData>({
+export const ParkingForm = ({timestampLabel, getSubmissionResult}: Props) => {
+  const {control, reset, handleSubmit, formState: {errors}} = useForm<GarageActionPayload>({
     defaultValues: {
       licensePlate: '',
     },
     resolver: zodResolver(parkingFormValidationSchema),
   });
+  const [errMsg, setErrMsg] = useState('');
+
+  const onSubmit = useCallback((data: GarageActionPayload) => {
+    const submissionResult = getSubmissionResult(data);
+
+    if (submissionResult.success) {
+      setErrMsg('');
+      reset();
+    } else {
+      setErrMsg(submissionResult.message ?? 'Submission error.');
+    }
+  }, [getSubmissionResult, setErrMsg, reset])
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <div>
         <Form.Item label='License Plate'>
           <Controller
@@ -63,6 +76,7 @@ export const ParkingForm = ({onSubmit, timestampLabel}: Props) => {
         console.info('Cancelling submission');
         reset();
       }}>Clear</button>
+      {errMsg && <p>{errMsg}</p>}
     </form>
   );
 }

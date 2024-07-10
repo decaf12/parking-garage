@@ -1,10 +1,12 @@
 import {produce} from "immer";
 import {useReducer} from "react";
+import {Dayjs} from "dayjs";
 
 type Spot = {
   licensePlate: string,
-  entryTime: number,
+  entryTime: Dayjs,
 }
+
 
 export type GarageState = {
   totalSpots: number,
@@ -16,16 +18,21 @@ export const GarageUpdate: Record<string, string> = {
   CHECK_OUT: 'CHECK_OUT',
 }
 
-type GarageUpdateType = typeof GarageUpdate[keyof typeof GarageUpdate]
+export type GarageUpdateType = typeof GarageUpdate[keyof typeof GarageUpdate]
 
-type GarageUpdateResult = {
+export type GarageUpdateResult = {
   success: boolean,
   message?: string,
 };
 
+export type GarageActionPayload = {
+  licensePlate: string,
+  timestamp: Dayjs,
+}
+
 export type GarageAction = {
   type: GarageUpdateType,
-  licensePlate: string,
+  payload: GarageActionPayload
 }
 
 const reducer = (state: GarageState, action: GarageAction) => {
@@ -34,8 +41,8 @@ const reducer = (state: GarageState, action: GarageAction) => {
       case GarageUpdate.CHECK_IN:
         if (draft.occupants.length < draft.totalSpots) {
           const newSpot: Spot = {
-            licensePlate: action.licensePlate,
-            entryTime: Date.now(),
+            licensePlate: action.payload.licensePlate,
+            entryTime: action.payload.timestamp,
           };
 
           draft.occupants.push(newSpot);
@@ -43,7 +50,7 @@ const reducer = (state: GarageState, action: GarageAction) => {
         break;
 
       case GarageUpdate.CHECK_OUT:
-        const index = draft.occupants.findIndex((spot) => spot.licensePlate === action.licensePlate);
+        const index = draft.occupants.findIndex((spot) => spot.licensePlate === action.payload.licensePlate);
         if (index !== -1) {
           draft.occupants.splice(index, 1);
         }
@@ -71,14 +78,14 @@ export const useGarageReducer = (totalSpots: number): [GarageState, (action: Gar
           }
         }
 
-        if (!action.licensePlate.length) {
+        if (!action.payload.licensePlate.length) {
           return {
             success: false,
             message: 'Missing license plate',
           };
         }
 
-        const index = state.occupants.findIndex((spot) => spot.licensePlate === action.licensePlate);
+        const index = state.occupants.findIndex((spot) => spot.licensePlate === action.payload.licensePlate);
 
         if (index !== -1) {
           return {
@@ -95,7 +102,7 @@ export const useGarageReducer = (totalSpots: number): [GarageState, (action: Gar
       }
 
       case GarageUpdate.CHECK_OUT: {
-        const index = state.occupants.findIndex((spot) => spot.licensePlate === action.licensePlate);
+        const index = state.occupants.findIndex((spot) => spot.licensePlate === action.payload.licensePlate);
         if (index === -1) {
           return {
             success: false,
