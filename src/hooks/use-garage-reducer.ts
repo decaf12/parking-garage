@@ -110,6 +110,14 @@ export const useGarageReducer = (totalSpots: number): [GarageState, (action: Gar
           };
         }
 
+        const entryTime = state.occupants[index].entryTime;
+        if (!action.payload.timestamp.isAfter(entryTime)) {
+          return {
+            success: false,
+            message: 'Checkout must take place after checkin.',
+          };
+        }
+
         dispatch(action);
         return {
           success: true,
