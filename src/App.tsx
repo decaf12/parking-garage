@@ -1,6 +1,7 @@
 import './App.css'
 import {GarageUpdate, useGarageReducer} from "./hooks/use-garage-reducer.ts";
 import {ParkingForm} from "./components/parking-form.tsx";
+import {ParkingSpotDetail} from "./components/parking-spot-detail.tsx";
 
 function App() {
   const [garage, dispatch] = useGarageReducer(3);
@@ -26,6 +27,13 @@ function App() {
         })}
       />
       <button>Details</button>
+      {garage.occupants.length
+      ? garage.occupants.map((parkingSpot) =>
+          <ParkingSpotDetail
+          key={parkingSpot.licensePlate}
+          parkingSpot={parkingSpot}
+          />)
+      : 'No parked cars.'}
     </>
   )
 }

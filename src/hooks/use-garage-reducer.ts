@@ -2,7 +2,7 @@ import {produce} from "immer";
 import {useReducer} from "react";
 import {Dayjs} from "dayjs";
 
-type Spot = {
+export type ParkingSpot = {
   licensePlate: string,
   entryTime: Dayjs,
 }
@@ -10,7 +10,7 @@ type Spot = {
 
 export type GarageState = {
   totalSpots: number,
-  occupants: Spot[],
+  occupants: ParkingSpot[],
 };
 
 export const GarageUpdate: Record<string, string> = {
@@ -40,7 +40,7 @@ const reducer = (state: GarageState, action: GarageAction) => {
     switch (action.type) {
       case GarageUpdate.CHECK_IN:
         if (draft.occupants.length < draft.totalSpots) {
-          const newSpot: Spot = {
+          const newSpot: ParkingSpot = {
             licensePlate: action.payload.licensePlate,
             entryTime: action.payload.timestamp,
           };
