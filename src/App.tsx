@@ -18,6 +18,13 @@ function App() {
         })}
       />
       <button>Check out car</button>
+      <ParkingForm
+        timestampLabel='Exit Time'
+        getSubmissionResult={(payload) => dispatch({
+          type: GarageUpdate.CHECK_OUT,
+          payload,
+        })}
+      />
       <button>Details</button>
     </>
   )
