@@ -11,7 +11,7 @@ export type GarageState = {
   occupants: Spot[],
 };
 
-const GarageUpdate: Record<string, string> = {
+export const GarageUpdate: Record<string, string> = {
   CHECK_IN: 'CHECK_IN',
   CHECK_OUT: 'CHECK_OUT',
 }
@@ -63,7 +63,7 @@ export const useGarageReducer = (totalSpots: number): [GarageState, (action: Gar
 
   const manager = (action: GarageAction): GarageUpdateResult => {
     switch (action.type) {
-      case GarageUpdate.CHECK_IN:
+      case GarageUpdate.CHECK_IN: {
         if (state.occupants.length >= state.totalSpots) {
           return {
             success: false,
@@ -78,25 +78,37 @@ export const useGarageReducer = (totalSpots: number): [GarageState, (action: Gar
           };
         }
 
+        const index = state.occupants.findIndex((spot) => spot.licensePlate === action.licensePlate);
+
+        if (index !== -1) {
+          return {
+            success: false,
+            message: 'This car is already parked here.',
+          };
+        }
+
         dispatch(action);
 
         return {
           success: true,
         };
+      }
 
-        case GarageUpdate.CHECK_OUT:
-          const index = state.occupants.findIndex((spot) => spot.licensePlate === action.licensePlate);
-          if (index === -1) {
-            return {
-              success: false,
-              message: 'No such car is parked here.',
-            };
-          }
-
-          dispatch(action);
+      case GarageUpdate.CHECK_OUT: {
+        const index = state.occupants.findIndex((spot) => spot.licensePlate === action.licensePlate);
+        if (index === -1) {
           return {
-            success: true,
+            success: false,
+            message: 'No such car is parked here.',
           };
+        }
+
+        dispatch(action);
+        return {
+          success: true,
+        };
+      }
+
 
       default:
         return {

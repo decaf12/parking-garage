@@ -1,19 +1,34 @@
 import './App.css'
-import {useGarageReducer} from "./hooks/use-garage-reducer.ts";
-import {useState} from "react";
-import {useForm} from "react-hook-form";
-import {ParkingForm} from "./components/parking-form.tsx";
+import {GarageUpdate, useGarageReducer} from "./hooks/use-garage-reducer.ts";
+import {useCallback, useState} from "react";
+import {ParkingForm, ParkingFormData} from "./components/parking-form.tsx";
 
 function App() {
   const [garage, dispatch] = useGarageReducer(3);
-  const [isCheckingIn, setIsCheckingIn] = useState(false);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkinErrorMsg, setCheckInErrorMsg] = useState('');
+
+  const handleCheckin = useCallback((data: ParkingFormData) => {
+    console.info('New car data', data);
+    const checkInResult = dispatch({
+      licensePlate: data.licensePlate,
+      type: GarageUpdate.CHECK_IN,
+    });
+
+    if (checkInResult.success) {
+      setCheckInErrorMsg('');
+    } else {
+      setCheckInErrorMsg(checkInResult.message ?? 'Error checking in.');
+    }
+  }, [dispatch, setCheckInErrorMsg]);
+
+  const freeParkingSpotCount = garage.totalSpots - garage.occupants.length;
 
   return (
     <>
-      <div>{garage.totalSpots - garage.occupants.length} parking spots left</div>
+      <div>{freeParkingSpotCount} parking spot{(freeParkingSpotCount !== 1)&& 's'} left</div>
       <button>Check in car</button>
-      <ParkingForm onSubmit={(data) => console.log('parking form data', data)} onCancel={() => console.log('cancelled')}/>
+      <ParkingForm timestampLabel='Entry Time' onSubmit={handleCheckin} onClear={() => console.log('cancelled')}/>
+      {checkinErrorMsg && <p>{checkinErrorMsg}</p>}
       <button>Check out car</button>
       <button>Details</button>
     </>
