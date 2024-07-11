@@ -1,28 +1,40 @@
 import './App.css'
-import {GarageUpdate, useGarageReducer} from "./hooks/use-garage-reducer.ts";
+import {CheckedOutCar, ParkingSpot, useGarageReducer} from "./hooks/use-garage-reducer.ts";
 import {ParkingForm} from "./components/parking-form.tsx";
 import {ParkingSpotDetail} from "./components/parking-spot-detail.tsx";
 import {feeCalculator} from "./services/fee-calculator.ts";
 import {useState} from "react";
+import {Modal} from "antd";
 
-type Result = {
-  success: boolean;
-  message: string;
-};
+type CheckinResult = {
+  success: true;
+  spot: ParkingSpot;
+} | {
+  success: false;
+  errorMsg: string;
+} | {
+  success: null;
+}
+
+type CheckoutResult = {
+  success: true;
+  car: CheckedOutCar;
+} | {
+  success: false;
+  errorMsg: string;
+} | {
+  success: null;
+}
 
 function App() {
-  const [garage, dispatch] = useGarageReducer(3, feeCalculator);
-  const [checkinResult, setCheckinResult] = useState<Result>({
-    success: true,
-    message: '',
+  const [garage, checkin, checkout] = useGarageReducer(3, feeCalculator);
+  const [checkinResult, setCheckinResult] = useState<CheckinResult>({
+    success: null,
   });
 
-  const [checkoutResult, setCheckoutResult] = useState<Result>({
-    success: true,
-    message: '',
+  const [checkoutResult, setCheckoutResult] = useState<CheckoutResult>({
+    success: null,
   });
-
-  const [fees, setFees] = useState(0);
 
   const freeParkingSpotCount = garage.totalSpots - garage.occupants.length;
 
@@ -32,51 +44,44 @@ function App() {
       <button>Check in car</button>
       <ParkingForm
         timestampLabel='Entry Time'
-        submissionSuccess={checkinResult.success}
+        submissionSuccess={checkinResult.success !== false}
         onSubmit={(payload) => {
           try {
-            dispatch({
-              type: GarageUpdate.CHECK_IN,
-              payload,
-            });
+            const newSpot = checkin(payload);
             setCheckinResult({
               success: true,
-              message: '',
-            })
+              spot: newSpot,
+            });
           } catch (e) {
             setCheckinResult({
               success: false,
-              message: (e as Error).message,
+              errorMsg: (e as Error).message,
             });
           }
         }}
       />
-      {!checkinResult.success && <p>{checkinResult.message}</p>}
+      {checkinResult.success === false && <p>{checkinResult.errorMsg}</p>}
       <button>Check out car</button>
       <ParkingForm
         timestampLabel='Exit Time'
-        submissionSuccess={checkoutResult.success}
+        submissionSuccess={checkoutResult.success !== false}
         onSubmit={(payload) => {
           try {
-            const {fees} = dispatch({
-              type: GarageUpdate.CHECK_OUT,
-              payload,
-            });
+            const checkedOutCar = checkout(payload);
             setCheckoutResult({
               success: true,
-              message: '',
+              car: checkedOutCar,
             });
-
-            setFees(fees ?? 0);
           } catch (e) {
             setCheckoutResult({
               success: false,
-              message: (e as Error).message,
+              errorMsg: (e as Error).message,
             });
           }
         }}
       />
-      {!checkoutResult.success && <p>{checkoutResult.message}</p>}
+      {checkoutResult.success === true && <Modal title='tacos'/>}
+      {checkoutResult.success === false && <p>{checkoutResult.errorMsg}</p>}
       <button>Details</button>
       {garage.occupants.length
       ? garage.occupants.map((parkingSpot) =>
