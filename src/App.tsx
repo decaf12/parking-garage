@@ -5,6 +5,7 @@ import {ParkingSpotDetail} from "./components/parking-spot-detail.tsx";
 import {feeCalculator} from "./services/fee-calculator.ts";
 import {useState} from "react";
 import {Modal} from "antd";
+import {CheckInSuccess} from "./components/dialogs/check-in-success.tsx";
 
 type CheckinResult = {
   success: true;
@@ -36,6 +37,8 @@ function App() {
     success: null,
   });
 
+  const [shouldShowCheckinModal, setShouldShowCheckinModal] = useState(false);
+
   const freeParkingSpotCount = garage.totalSpots - garage.occupants.length;
 
   return (
@@ -52,14 +55,22 @@ function App() {
               success: true,
               spot: newSpot,
             });
+            setShouldShowCheckinModal(true);
           } catch (e) {
             setCheckinResult({
               success: false,
               errorMsg: (e as Error).message,
             });
+            setShouldShowCheckinModal(false);
           }
         }}
       />
+      {checkinResult.success === true &&
+      <CheckInSuccess
+          open={shouldShowCheckinModal}
+          onOk={() => setShouldShowCheckinModal(false)}
+          spot={checkinResult.spot}
+      />}
       {checkinResult.success === false && <p>{checkinResult.errorMsg}</p>}
       <button>Check out car</button>
       <ParkingForm
@@ -80,7 +91,7 @@ function App() {
           }
         }}
       />
-      {checkoutResult.success === true && <Modal title='tacos'/>}
+      {checkoutResult.success === true && <Modal title='Checkout'/>}
       {checkoutResult.success === false && <p>{checkoutResult.errorMsg}</p>}
       <button>Details</button>
       {garage.occupants.length
