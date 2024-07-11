@@ -110,7 +110,6 @@ export const useGarageReducer = (
         };
       }
 
-
       default:
         throw Error('No such action.');
     }

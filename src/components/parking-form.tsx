@@ -3,12 +3,13 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
 import {DatePicker, Input, Form} from "antd";
 import dayjs, {Dayjs} from "dayjs";
-import {GarageActionPayload, GarageUpdateResult} from "../hooks/use-garage-reducer.ts";
-import {useCallback, useState} from "react";
+import {GarageActionPayload} from "../hooks/use-garage-reducer.ts";
+import {useEffect} from "react";
 
 type Props = {
   timestampLabel: string,
-  getSubmissionResult: (payload: GarageActionPayload) => GarageUpdateResult,
+  submissionSuccess: boolean,
+  onSubmit: (payload: GarageActionPayload) => void,
 };
 
 const parkingFormValidationSchema = z.object({
@@ -16,25 +17,19 @@ const parkingFormValidationSchema = z.object({
   timestamp: z.custom<Dayjs>((val) => val instanceof dayjs, 'Invalid date'),
 });
 
-export const ParkingForm = ({timestampLabel, getSubmissionResult}: Props) => {
-  const {control, reset, handleSubmit, formState: {errors}} = useForm<GarageActionPayload>({
+export const ParkingForm = ({timestampLabel, submissionSuccess, onSubmit}: Props) => {
+  const {control, reset, handleSubmit, formState: {errors, isSubmitted}} = useForm<GarageActionPayload>({
     defaultValues: {
       licensePlate: '',
     },
     resolver: zodResolver(parkingFormValidationSchema),
   });
-  const [errMsg, setErrMsg] = useState('');
 
-  const onSubmit = useCallback((data: GarageActionPayload) => {
-    const submissionResult = getSubmissionResult(data);
-
-    if (submissionResult.success) {
-      setErrMsg('');
+  useEffect(() => {
+    if (submissionSuccess && isSubmitted) {
       reset();
-    } else {
-      setErrMsg(submissionResult.message ?? 'Submission error.');
     }
-  }, [getSubmissionResult, setErrMsg, reset])
+  }, [submissionSuccess, isSubmitted]);
 
   return (
     <form
@@ -76,7 +71,6 @@ export const ParkingForm = ({timestampLabel, getSubmissionResult}: Props) => {
         console.info('Cancelling submission');
         reset();
       }}>Clear</button>
-      {errMsg && <p>{errMsg}</p>}
     </form>
   );
 }
