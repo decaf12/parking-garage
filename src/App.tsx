@@ -98,7 +98,7 @@ function App() {
         items={[
           {
             key: 'checkinForm',
-            label: 'Check in car',
+            label: freeParkingSpotCount ? 'Check in car' : 'Cannot check in car (garage full)',
             children: (
               <>
                 {checkinForm}
@@ -120,11 +120,11 @@ function App() {
         ]}
         />
       <Collapse
-        {...freeParkingSpotCount < garage.totalSpots ? {} : {collapsible: "disabled"}}
+        {...garage.occupants.length ? {} : {collapsible: "disabled"}}
         items={[
           {
             key: 'checkoutForm',
-            label: 'Check out car',
+            label: garage.occupants.length ? 'Check out car' : 'No car to check out',
             children: (
               <>
                 {checkoutForm}
@@ -150,7 +150,7 @@ function App() {
         items={[
           {
             key: 'details',
-            label: 'Details',
+            label: garage.occupants.length ? 'Details' : 'No cars parked',
             children: garage.occupants.map((parkingSpot) =>
                   <ParkingSpotDetailCard
                     key={parkingSpot.licensePlate}
