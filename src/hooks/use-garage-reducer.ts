@@ -7,7 +7,6 @@ export type ParkingSpot = {
   entryTime: Dayjs,
 }
 
-
 export type GarageState = {
   totalSpots: number,
   occupants: ParkingSpot[],
@@ -21,8 +20,7 @@ export const GarageUpdate: Record<string, string> = {
 export type GarageUpdateType = typeof GarageUpdate[keyof typeof GarageUpdate]
 
 export type GarageUpdateResult = {
-  success: boolean,
-  message?: string,
+  fees?: number,
 };
 
 export type GarageActionPayload = {
@@ -62,7 +60,10 @@ const reducer = (state: GarageState, action: GarageAction) => {
   });
 };
 
-export const useGarageReducer = (totalSpots: number): [GarageState, (action: GarageAction) => GarageUpdateResult] => {
+export const useGarageReducer = (
+  totalSpots: number,
+  feeCalculator: (checkin: Dayjs, checkout: Dayjs) => number,
+) : [GarageState, (action: GarageAction) => GarageUpdateResult] => {
   const [state, dispatch] = useReducer(reducer, {
     totalSpots,
     occupants: [],
@@ -72,64 +73,46 @@ export const useGarageReducer = (totalSpots: number): [GarageState, (action: Gar
     switch (action.type) {
       case GarageUpdate.CHECK_IN: {
         if (state.occupants.length >= state.totalSpots) {
-          return {
-            success: false,
-            message: 'No more spots.',
-          }
+          throw new Error('No more spots.');
         }
 
-        if (!action.payload.licensePlate.length) {
-          return {
-            success: false,
-            message: 'Missing license plate',
-          };
+        if (!action.payload.licensePlate) {
+          throw new Error('Missing license plate.');
         }
 
         const index = state.occupants.findIndex((spot) => spot.licensePlate === action.payload.licensePlate);
 
         if (index !== -1) {
-          return {
-            success: false,
-            message: 'This car is already parked here.',
-          };
+          throw new Error('This car is already parked here.');
         }
 
         dispatch(action);
 
-        return {
-          success: true,
-        };
+        return {};
       }
 
       case GarageUpdate.CHECK_OUT: {
         const index = state.occupants.findIndex((spot) => spot.licensePlate === action.payload.licensePlate);
         if (index === -1) {
-          return {
-            success: false,
-            message: 'No such car is parked here.',
-          };
+          throw new Error('No such car is parked here.');
         }
 
-        const entryTime = state.occupants[index].entryTime;
-        if (!action.payload.timestamp.isAfter(entryTime)) {
-          return {
-            success: false,
-            message: 'Checkout must take place after checkin.',
-          };
+        const checkinTime = state.occupants[index].entryTime;
+        const checkoutTime = action.payload.timestamp;
+
+        if (!checkoutTime.isAfter(checkinTime)) {
+          throw new Error('Checkout must take place after checkin.');
         }
 
         dispatch(action);
         return {
-          success: true,
+          fees: feeCalculator(checkinTime, checkoutTime),
         };
       }
 
 
       default:
-        return {
-          success: false,
-          message: 'No such action.',
-        };
+        throw Error('No such action.');
     }
   };
 

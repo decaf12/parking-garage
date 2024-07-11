@@ -2,9 +2,10 @@ import './App.css'
 import {GarageUpdate, useGarageReducer} from "./hooks/use-garage-reducer.ts";
 import {ParkingForm} from "./components/parking-form.tsx";
 import {ParkingSpotDetail} from "./components/parking-spot-detail.tsx";
+import {feeCalculator} from "./services/fee-calculator.ts";
 
 function App() {
-  const [garage, dispatch] = useGarageReducer(3);
+  const [garage, dispatch] = useGarageReducer(3, feeCalculator);
   const freeParkingSpotCount = garage.totalSpots - garage.occupants.length;
 
   return (
@@ -30,8 +31,8 @@ function App() {
       {garage.occupants.length
       ? garage.occupants.map((parkingSpot) =>
           <ParkingSpotDetail
-          key={parkingSpot.licensePlate}
-          parkingSpot={parkingSpot}
+            key={parkingSpot.licensePlate}
+            parkingSpot={parkingSpot}
           />)
       : 'No parked cars.'}
     </>

@@ -61,8 +61,8 @@ export const ParkingForm = ({timestampLabel, getSubmissionResult}: Props) => {
             render={({ field }) => (
               <DatePicker
                 {...field}
-                showTime={{ format: 'HH:mm' }}
-                format='YYYY-MM-DD HH:mm'
+                showTime
+                format='YYYY-MM-DD HH:mm:ss'
                 placeholder="Select date"
               />
             )}
