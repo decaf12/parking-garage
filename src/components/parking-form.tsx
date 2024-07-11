@@ -8,7 +8,7 @@ import {useEffect} from "react";
 
 type Props = {
   timestampLabel: string,
-  submissionSuccess: boolean,
+  passedBusinessLogicValidation: boolean,
   onSubmit: (payload: GarageActionPayload) => void,
 };
 
@@ -17,8 +17,8 @@ const parkingFormValidationSchema = z.object({
   timestamp: z.custom<Dayjs>((val) => val instanceof dayjs, 'Invalid date'),
 });
 
-export const ParkingForm = ({timestampLabel, submissionSuccess, onSubmit}: Props) => {
-  const {control, reset, handleSubmit, formState: {errors, isSubmitted}} = useForm<GarageActionPayload>({
+export const ParkingForm = ({timestampLabel, passedBusinessLogicValidation, onSubmit}: Props) => {
+  const {control, reset, handleSubmit, formState: {errors, isSubmitSuccessful}} = useForm<GarageActionPayload>({
     defaultValues: {
       licensePlate: '',
     },
@@ -26,10 +26,10 @@ export const ParkingForm = ({timestampLabel, submissionSuccess, onSubmit}: Props
   });
 
   useEffect(() => {
-    if (submissionSuccess && isSubmitted) {
+    if (passedBusinessLogicValidation && isSubmitSuccessful) {
       reset();
     }
-  }, [submissionSuccess, isSubmitted]);
+  }, [passedBusinessLogicValidation, isSubmitSuccessful]);
 
   return (
     <form

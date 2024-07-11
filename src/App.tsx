@@ -1,11 +1,13 @@
 import './App.css'
 import {CheckedOutCar, ParkingSpot, useGarageReducer} from "./hooks/use-garage-reducer.ts";
 import {ParkingForm} from "./components/parking-form.tsx";
-import {ParkingSpotDetail} from "./components/parking-spot-detail.tsx";
+import {ParkingSpotDetailCard} from "./components/parking-spot-detail-card.tsx";
 import {feeCalculator} from "./services/fee-calculator.ts";
 import {useState} from "react";
-import {Modal} from "antd";
-import {CheckInSuccess} from "./components/dialogs/check-in-success.tsx";
+import {CheckInSuccessDialog} from "./components/dialogs/check-in-success-dialog.tsx";
+import {CheckInFailureDialog} from "./components/dialogs/check-in-failure-dialog.tsx";
+import {CheckOutSuccessDialog} from "./components/dialogs/check-out-success-dialog.tsx";
+import {CheckOutFailureDialog} from "./components/dialogs/check-out-failure-dialog.tsx";
 
 type CheckinResult = {
   success: true;
@@ -38,6 +40,10 @@ function App() {
   });
 
   const [shouldShowCheckinModal, setShouldShowCheckinModal] = useState(false);
+  const closeCheckinModal = () => setShouldShowCheckinModal(false);
+
+  const [shouldShowCheckoutModal, setShouldShowCheckoutModal] = useState(false);
+  const closeCheckoutModal = () => setShouldShowCheckoutModal(false);
 
   const freeParkingSpotCount = garage.totalSpots - garage.occupants.length;
 
@@ -47,7 +53,7 @@ function App() {
       <button>Check in car</button>
       <ParkingForm
         timestampLabel='Entry Time'
-        submissionSuccess={checkinResult.success !== false}
+        passedBusinessLogicValidation={checkinResult.success !== false}
         onSubmit={(payload) => {
           try {
             const newSpot = checkin(payload);
@@ -55,27 +61,32 @@ function App() {
               success: true,
               spot: newSpot,
             });
-            setShouldShowCheckinModal(true);
           } catch (e) {
             setCheckinResult({
               success: false,
               errorMsg: (e as Error).message,
             });
-            setShouldShowCheckinModal(false);
+          } finally {
+            setShouldShowCheckinModal(true);
           }
         }}
       />
       {checkinResult.success === true &&
-      <CheckInSuccess
-          open={shouldShowCheckinModal}
-          onOk={() => setShouldShowCheckinModal(false)}
-          spot={checkinResult.spot}
-      />}
-      {checkinResult.success === false && <p>{checkinResult.errorMsg}</p>}
+        <CheckInSuccessDialog
+            open={shouldShowCheckinModal}
+            closeModal={closeCheckinModal}
+            spot={checkinResult.spot}
+        />}
+      {checkinResult.success === false &&
+        <CheckInFailureDialog
+            open={shouldShowCheckinModal}
+            closeModal={closeCheckinModal}
+            errMsg={checkinResult.errorMsg}
+        />}
       <button>Check out car</button>
       <ParkingForm
         timestampLabel='Exit Time'
-        submissionSuccess={checkoutResult.success !== false}
+        passedBusinessLogicValidation={checkoutResult.success !== false}
         onSubmit={(payload) => {
           try {
             const checkedOutCar = checkout(payload);
@@ -88,15 +99,27 @@ function App() {
               success: false,
               errorMsg: (e as Error).message,
             });
+          } finally {
+            setShouldShowCheckoutModal(true);
           }
         }}
       />
-      {checkoutResult.success === true && <Modal title='Checkout'/>}
-      {checkoutResult.success === false && <p>{checkoutResult.errorMsg}</p>}
+      {checkoutResult.success === true &&
+        <CheckOutSuccessDialog
+            open={shouldShowCheckoutModal}
+            closeModal={closeCheckoutModal}
+            car={checkoutResult.car}
+        />}
+      {checkoutResult.success === false &&
+        <CheckOutFailureDialog
+            open={shouldShowCheckoutModal}
+            closeModal={closeCheckoutModal}
+            errMsg={checkoutResult.errorMsg}
+        />}
       <button>Details</button>
       {garage.occupants.length
       ? garage.occupants.map((parkingSpot) =>
-          <ParkingSpotDetail
+          <ParkingSpotDetailCard
             key={parkingSpot.licensePlate}
             parkingSpot={parkingSpot}
           />)

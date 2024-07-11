@@ -1,5 +1,5 @@
 import {produce} from "immer";
-import {useCallback, useReducer} from "react";
+import {useReducer} from "react";
 import {Dayjs} from "dayjs";
 
 export type ParkingSpot = {
@@ -68,7 +68,7 @@ export const useGarageReducer = (
     occupants: [],
   });
 
-  const checkin = useCallback ((payload: GarageActionPayload): ParkingSpot => {
+  const checkin = (payload: GarageActionPayload): ParkingSpot => {
     if (state.occupants.length >= state.totalSpots) {
       throw new Error('No more spots.');
     }
@@ -79,8 +79,9 @@ export const useGarageReducer = (
       throw new Error('Missing license plate.');
     }
 
+    console.info('state before lookup', state);
     const index = state.occupants.findIndex((spot) => spot.licensePlate === licensePlate);
-
+    console.info('Car index', index);
     if (index !== -1) {
       throw new Error('This car is already parked here.');
     }
@@ -94,9 +95,9 @@ export const useGarageReducer = (
       licensePlate,
       checkinTime: payload.timestamp,
     };
-  }, []);
+  };
 
-  const checkout = useCallback((payload: GarageActionPayload): CheckedOutCar => {
+  const checkout = (payload: GarageActionPayload): CheckedOutCar => {
     const {licensePlate, timestamp: checkoutTime} = payload;
 
     const spot = state.occupants.find((spot) => spot.licensePlate === licensePlate);
@@ -120,8 +121,7 @@ export const useGarageReducer = (
       checkoutTime,
       fees: feeCalculator(checkinTime, checkoutTime),
     };
-  }, [feeCalculator]);
-
+  };
 
   return [state, checkin, checkout];
 };
