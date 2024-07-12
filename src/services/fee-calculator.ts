@@ -7,8 +7,8 @@ const maxBlocks = 4;
 export const feeCalculator = (checkin: Dayjs, checkout: Dayjs) => {
   const diffInSeconds = checkout.diff(checkin, 'second');
 
-  if (diffInSeconds <= 0) {
-    return 0;
+  if (diffInSeconds < 0) {
+    throw new Error('Checkout cannot take place before checkin.');
   }
 
   const blocksUncapped = Math.ceil(diffInSeconds / blockSizeInSeconds);

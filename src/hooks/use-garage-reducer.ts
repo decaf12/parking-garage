@@ -63,6 +63,10 @@ export const useGarageReducer = (
   totalSpots: number,
   feeCalculator: (checkin: Dayjs, checkout: Dayjs) => number,
 ) : [GarageState, (payload: GarageActionPayload) => ParkingSpot, (payload: GarageActionPayload) => CheckedOutCar] => {
+  if (totalSpots < 0) {
+    totalSpots = 0;
+  }
+
   const [state, dispatch] = useReducer(reducer, {
     totalSpots,
     occupants: [],
