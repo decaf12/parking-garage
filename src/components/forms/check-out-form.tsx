@@ -1,7 +1,7 @@
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
-import {DatePicker, Input, Form} from "antd";
+import {DatePicker, Input, Form, Typography} from "antd";
 import dayjs, {Dayjs} from "dayjs";
 import {GarageActionPayload} from "../../hooks/use-garage-reducer.ts";
 import {useEffect} from "react";
@@ -9,6 +9,7 @@ import {useEffect} from "react";
 type Props = {
   isCheckoutSuccessful: boolean,
   onSubmit: (payload: GarageActionPayload) => void,
+  feeCalculator: (checkin: Dayjs, checkout: Dayjs) => number,
 };
 
 const checkoutFormValidationSchema = z.object({
@@ -65,6 +66,9 @@ export const CheckoutForm = ({isCheckoutSuccessful, onSubmit}: Props) => {
           />
         </Form.Item>
         {errors.timestamp && <p>{errors.timestamp.message}</p>}
+      </div>
+      <div style={{textAlign: 'left'}}>
+        <Typography.Text>Tacos</Typography.Text>
       </div>
 
       <button>Save</button>
