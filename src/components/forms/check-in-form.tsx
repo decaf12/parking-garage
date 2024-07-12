@@ -3,33 +3,36 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
 import {DatePicker, Input, Form} from "antd";
 import dayjs, {Dayjs} from "dayjs";
-import {GarageActionPayload} from "../hooks/use-garage-reducer.ts";
-import {useEffect} from "react";
+import {GarageActionPayload} from "../../hooks/use-garage-reducer.ts";
+import {useEffect, useState} from "react";
 
 type Props = {
-  timestampLabel: string,
-  passedBusinessLogicValidation: boolean,
+  isCheckinSuccessful: boolean,
   onSubmit: (payload: GarageActionPayload) => void,
 };
 
-const parkingFormValidationSchema = z.object({
+const checkinFormValidationSchema = z.object({
   licensePlate: z.string().min(1, {message: 'License place is required.'}),
   timestamp: z.custom<Dayjs>((val) => val instanceof dayjs, 'Invalid date'),
 });
 
-export const ParkingForm = ({timestampLabel, passedBusinessLogicValidation, onSubmit}: Props) => {
-  const {control, reset, handleSubmit, formState: {errors, isSubmitSuccessful}} = useForm<GarageActionPayload>({
+const dateTimeFormat = 'YYYY-MM-DD HH:mm:ss';
+export const CheckinForm = ({isCheckinSuccessful, onSubmit}: Props) => {
+  const [defaultCheckinTime, setDefaultCheckinTime] = useState(dayjs());
+  const {control, reset, setValue, handleSubmit, formState: {errors, isSubmitSuccessful}} = useForm<GarageActionPayload>({
     defaultValues: {
       licensePlate: '',
     },
-    resolver: zodResolver(parkingFormValidationSchema),
+    resolver: zodResolver(checkinFormValidationSchema),
   });
 
   useEffect(() => {
-    if (passedBusinessLogicValidation && isSubmitSuccessful) {
+    if (isCheckinSuccessful && isSubmitSuccessful) {
       reset();
+      setDefaultCheckinTime(dayjs());
+      setValue('timestamp', dayjs(), {shouldTouch: true});
     }
-  }, [passedBusinessLogicValidation, isSubmitSuccessful]);
+  }, [isCheckinSuccessful, isSubmitSuccessful]);
 
   return (
     <form
@@ -49,15 +52,16 @@ export const ParkingForm = ({timestampLabel, passedBusinessLogicValidation, onSu
       </div>
 
       <div>
-        <Form.Item label={timestampLabel}>
+        <Form.Item label='Check in'>
           <Controller
             name='timestamp'
             control={control}
+            defaultValue={defaultCheckinTime}
             render={({ field }) => (
               <DatePicker
                 {...field}
                 showTime
-                format='YYYY-MM-DD HH:mm:ss'
+                format={dateTimeFormat}
                 placeholder="Select date"
               />
             )}
@@ -68,9 +72,10 @@ export const ParkingForm = ({timestampLabel, passedBusinessLogicValidation, onSu
 
       <button>Save</button>
       <button type='button' onClick={() => {
-        console.info('Cancelling submission');
         reset();
-      }}>Clear</button>
+      }}>
+        Clear
+      </button>
     </form>
   );
 }

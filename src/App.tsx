@@ -9,6 +9,7 @@ import {CheckInFailureDialog} from "./components/dialogs/check-in-failure-dialog
 import {CheckOutSuccessDialog} from "./components/dialogs/check-out-success-dialog.tsx";
 import {CheckOutFailureDialog} from "./components/dialogs/check-out-failure-dialog.tsx";
 import {Collapse} from "antd";
+import {CheckinForm} from "./components/forms/check-in-form.tsx";
 
 type CheckinResult = {
   success: true;
@@ -31,7 +32,10 @@ type CheckoutResult = {
 }
 
 function App() {
-  const [garage, checkin, checkout] = useGarageReducer(3, feeCalculator);
+  const [garage, checkin, checkout] = useGarageReducer({
+    totalSpots: 3,
+    occupants: [],
+    }, feeCalculator);
   const [checkinResult, setCheckinResult] = useState<CheckinResult>({
     success: null,
   });
@@ -48,10 +52,10 @@ function App() {
 
   const freeParkingSpotCount = garage.totalSpots - garage.occupants.length;
 
-  const checkinForm = <ParkingForm
-    timestampLabel='Entry Time'
-    passedBusinessLogicValidation={checkinResult.success !== false}
+  const checkinForm = <CheckinForm
+    isCheckinSuccessful={checkinResult.success !== false}
     onSubmit={(payload) => {
+      console.info('check in payload', payload);
       try {
         const newSpot = checkin(payload);
         setCheckinResult({
