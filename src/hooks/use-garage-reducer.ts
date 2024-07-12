@@ -32,6 +32,31 @@ export type GarageAction = {
   payload: GarageActionPayload
 }
 
+const validateParkingSpot = ({licensePlate, checkinTime}: ParkingSpot) => {
+  if (!licensePlate) {
+    throw new Error('Missing license plate.');
+  }
+
+  if (!checkinTime) {
+    throw new Error('Missing check in time.');
+  }
+}
+const validateGarageState = ({totalSpots, occupants}: GarageState) => {
+  if (totalSpots < occupants.length) {
+    throw new Error('Too many cars for that number of spots.');
+  }
+
+  const licensePlates: string[] = [];
+
+  occupants.forEach((parkingSpot) => {
+    validateParkingSpot(parkingSpot);
+    if (licensePlates.includes(parkingSpot.licensePlate)) {
+      throw new Error('The same license plate cannot appear in multiple parking spots at the same time.');
+    }
+    licensePlates.push((parkingSpot.licensePlate));
+  });
+
+}
 const reducer = (state: GarageState, action: GarageAction) => {
   return produce(state, (draft) => {
     switch (action.type) {
@@ -60,17 +85,12 @@ const reducer = (state: GarageState, action: GarageAction) => {
 };
 
 export const useGarageReducer = (
-  totalSpots: number,
+  initialState: GarageState,
   feeCalculator: (checkin: Dayjs, checkout: Dayjs) => number,
 ) : [GarageState, (payload: GarageActionPayload) => ParkingSpot, (payload: GarageActionPayload) => CheckedOutCar] => {
-  if (totalSpots < 0) {
-    totalSpots = 0;
-  }
+  validateGarageState(initialState)
 
-  const [state, dispatch] = useReducer(reducer, {
-    totalSpots,
-    occupants: [],
-  });
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const checkin = (payload: GarageActionPayload): ParkingSpot => {
     if (state.occupants.length >= state.totalSpots) {
@@ -83,10 +103,12 @@ export const useGarageReducer = (
       throw new Error('Missing license plate.');
     }
 
-    console.info('state before lookup', state);
-    const index = state.occupants.findIndex((spot) => spot.licensePlate === licensePlate);
-    console.info('Car index', index);
-    if (index !== -1) {
+    if (!payload.timestamp) {
+      throw new Error('Missing check in time.');
+    }
+
+    const existingCar = state.occupants.find((spot) => spot.licensePlate === licensePlate);
+    if (existingCar) {
       throw new Error('This car is already parked here.');
     }
 
@@ -113,6 +135,7 @@ export const useGarageReducer = (
     if (!checkoutTime.isAfter(checkinTime)) {
       throw new Error('Checkout must take place after checkin.');
     }
+
 
     dispatch({
       type: GarageUpdate.CHECK_OUT,

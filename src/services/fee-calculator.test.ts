@@ -2,40 +2,26 @@ import {describe, expect, it} from "vitest";
 import {feeCalculator} from "./fee-calculator.ts";
 import dayjs, {Dayjs} from "dayjs";
 
-describe('Edge cases', () => {
+describe('Exception cases', () => {
   let checkin: Dayjs;
   let checkout: Dayjs;
-
-  it('Charges no fees if checkout is at the same time as checkin', () => {
-    checkin = dayjs('2024-01-01 00:00:00');
-    checkout = dayjs('2024-01-01 00:00:00');
-    expect(feeCalculator(checkin, checkout)).toBe(0);
-  });
 
   it('Throws if checkout is before checkin', () => {
     checkin = dayjs('2024-01-01 00:00:00');
     checkout = dayjs('2023-12-31 23:59:59');
     expect(() => feeCalculator(checkin, checkout)).toThrowError(new Error('Checkout cannot take place before checkin.'));
   });
-
-  it('Charges $4 for 121s', () => {
-    checkin = dayjs('2024-07-12 09:00:00');
-    checkout = dayjs('2024-07-12 09:02:01');
-
-    expect(feeCalculator(checkin, checkout)).toBe(4);
-  });
-
-  it('Charges $4 for >> 120s', () => {
-    checkin = dayjs('2024-07-12 09:00:00');
-    checkout = dayjs('2025-12-31 11:59:59');
-
-    expect(feeCalculator(checkin, checkout)).toBe(4);
-  });
 });
 
 describe('Calculation', () => {
   let checkin: Dayjs;
   let checkout: Dayjs;
+
+  it('Charges $0 for 0s', () => {
+    checkin = dayjs('2024-01-01 00:00:00');
+    checkout = dayjs('2024-01-01 00:00:00');
+    expect(feeCalculator(checkin, checkout)).toBe(0);
+  });
 
   it('Charges $1 for 1s', () => {
     checkin = dayjs('2024-07-12 09:00:00');
@@ -117,6 +103,20 @@ describe('Calculation', () => {
   it('Charges $4 for 120s', () => {
     checkin = dayjs('2024-07-12 09:00:00');
     checkout = dayjs('2024-07-12 09:02:00');
+
+    expect(feeCalculator(checkin, checkout)).toBe(4);
+  });
+
+  it('Charges $4 for 121s', () => {
+    checkin = dayjs('2024-07-12 09:00:00');
+    checkout = dayjs('2024-07-12 09:02:01');
+
+    expect(feeCalculator(checkin, checkout)).toBe(4);
+  });
+
+  it('Charges $4 for >> 120s', () => {
+    checkin = dayjs('2024-07-12 09:00:00');
+    checkout = dayjs('2025-12-31 11:59:59');
 
     expect(feeCalculator(checkin, checkout)).toBe(4);
   });
