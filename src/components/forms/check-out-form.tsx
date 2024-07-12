@@ -7,29 +7,29 @@ import {GarageActionPayload} from "../../hooks/use-garage-reducer.ts";
 import {useEffect} from "react";
 
 type Props = {
-  timestampLabel: string,
-  passedBusinessLogicValidation: boolean,
+  isCheckoutSuccessful: boolean,
   onSubmit: (payload: GarageActionPayload) => void,
 };
 
-const parkingFormValidationSchema = z.object({
+const checkoutFormValidationSchema = z.object({
   licensePlate: z.string().min(1, {message: 'License place is required.'}),
   timestamp: z.custom<Dayjs>((val) => val instanceof dayjs, 'Invalid date'),
 });
 
-export const ParkingForm = ({timestampLabel, passedBusinessLogicValidation, onSubmit}: Props) => {
-  const {control, reset, handleSubmit, formState: {errors, isSubmitSuccessful}} = useForm<GarageActionPayload>({
+export const CheckoutForm = ({isCheckoutSuccessful, onSubmit}: Props) => {
+  const {setValue, control, reset, handleSubmit, formState: {errors, isSubmitSuccessful}} = useForm<GarageActionPayload>({
     defaultValues: {
       licensePlate: '',
     },
-    resolver: zodResolver(parkingFormValidationSchema),
+    resolver: zodResolver(checkoutFormValidationSchema),
   });
 
   useEffect(() => {
-    if (passedBusinessLogicValidation && isSubmitSuccessful) {
+    if (isCheckoutSuccessful && isSubmitSuccessful) {
       reset();
+      setValue('timestamp', dayjs(), {shouldTouch: true});
     }
-  }, [passedBusinessLogicValidation, isSubmitSuccessful]);
+  }, [isCheckoutSuccessful, isSubmitSuccessful]);
 
   return (
     <form
@@ -49,10 +49,11 @@ export const ParkingForm = ({timestampLabel, passedBusinessLogicValidation, onSu
       </div>
 
       <div>
-        <Form.Item label={timestampLabel}>
+        <Form.Item label='Check out'>
           <Controller
             name='timestamp'
             control={control}
+            defaultValue={dayjs()}
             render={({ field }) => (
               <DatePicker
                 {...field}
@@ -67,10 +68,7 @@ export const ParkingForm = ({timestampLabel, passedBusinessLogicValidation, onSu
       </div>
 
       <button>Save</button>
-      <button type='button' onClick={() => {
-        console.info('Cancelling submission');
-        reset();
-      }}>Clear</button>
+      <button type='button' onClick={() => {reset()}}>Clear</button>
     </form>
   );
 }

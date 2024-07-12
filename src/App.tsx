@@ -1,15 +1,15 @@
 import './App.css'
 import {CheckedOutCar, ParkingSpot, useGarageReducer} from "./hooks/use-garage-reducer.ts";
-import {ParkingForm} from "./components/parking-form.tsx";
 import {ParkingSpotDetailCard} from "./components/parking-spot-detail-card.tsx";
 import {feeCalculator} from "./services/fee-calculator.ts";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {CheckInSuccessDialog} from "./components/dialogs/check-in-success-dialog.tsx";
 import {CheckInFailureDialog} from "./components/dialogs/check-in-failure-dialog.tsx";
 import {CheckOutSuccessDialog} from "./components/dialogs/check-out-success-dialog.tsx";
 import {CheckOutFailureDialog} from "./components/dialogs/check-out-failure-dialog.tsx";
 import {Collapse} from "antd";
 import {CheckinForm} from "./components/forms/check-in-form.tsx";
+import {CheckoutForm} from "./components/forms/check-out-form.tsx";
 
 type CheckinResult = {
   success: true;
@@ -50,12 +50,28 @@ function App() {
   const [shouldShowCheckoutModal, setShouldShowCheckoutModal] = useState(false);
   const closeCheckoutModal = () => setShouldShowCheckoutModal(false);
 
+  const [activeCheckinKey, setActiveCheckinKey] = useState(['checkinForm']);
+  const [activeCheckoutKey, setActiveCheckoutKey] = useState<string[]>([]);
+  const [activeDetailsKey, setActiveDetailsKey] = useState<string[]>([]);
+
   const freeParkingSpotCount = garage.totalSpots - garage.occupants.length;
+
+  useEffect(() => {
+    if (!freeParkingSpotCount) {
+      setActiveCheckinKey([]);
+    }
+
+    if (!garage.occupants.length) {
+      setActiveCheckoutKey([]);
+      setActiveDetailsKey([]);
+    }
+  }, [freeParkingSpotCount]);
+
+
 
   const checkinForm = <CheckinForm
     isCheckinSuccessful={checkinResult.success !== false}
     onSubmit={(payload) => {
-      console.info('check in payload', payload);
       try {
         const newSpot = checkin(payload);
         setCheckinResult({
@@ -73,9 +89,8 @@ function App() {
     }}
   />;
 
-  const checkoutForm = <ParkingForm
-    timestampLabel='Exit Time'
-    passedBusinessLogicValidation={checkoutResult.success !== false}
+  const checkoutForm = <CheckoutForm
+    isCheckoutSuccessful={checkoutResult.success !== false}
     onSubmit={(payload) => {
       try {
         const checkedOutCar = checkout(payload);
@@ -99,6 +114,8 @@ function App() {
       <div>{freeParkingSpotCount} parking spot{(freeParkingSpotCount !== 1) && 's'} left</div>
       <Collapse
         {...freeParkingSpotCount ? {} : {collapsible: "disabled"}}
+        activeKey={activeCheckinKey}
+        onChange={() => setActiveCheckinKey(activeCheckinKey.length ? [] : ['checkinForm'])}
         items={[
           {
             key: 'checkinForm',
@@ -125,6 +142,8 @@ function App() {
         />
       <Collapse
         {...garage.occupants.length ? {} : {collapsible: "disabled"}}
+        activeKey={activeCheckoutKey}
+        onChange={() => setActiveCheckoutKey(activeCheckoutKey.length ? [] : ['checkoutForm'])}
         items={[
           {
             key: 'checkoutForm',
@@ -151,6 +170,8 @@ function App() {
       />
       <Collapse
         {...garage.occupants.length ? {} : {collapsible: "disabled"}}
+        activeKey={activeDetailsKey}
+        onChange={() => setActiveDetailsKey(activeDetailsKey.length ? [] : ['detailsForm'])}
         items={[
           {
             key: 'details',

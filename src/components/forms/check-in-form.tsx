@@ -1,10 +1,10 @@
 import {Controller, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
-import {DatePicker, Input, Form} from "antd";
+import {DatePicker, Form, Input} from "antd";
 import dayjs, {Dayjs} from "dayjs";
 import {GarageActionPayload} from "../../hooks/use-garage-reducer.ts";
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 
 type Props = {
   isCheckinSuccessful: boolean,
@@ -16,9 +16,7 @@ const checkinFormValidationSchema = z.object({
   timestamp: z.custom<Dayjs>((val) => val instanceof dayjs, 'Invalid date'),
 });
 
-const dateTimeFormat = 'YYYY-MM-DD HH:mm:ss';
 export const CheckinForm = ({isCheckinSuccessful, onSubmit}: Props) => {
-  const [defaultCheckinTime, setDefaultCheckinTime] = useState(dayjs());
   const {control, reset, setValue, handleSubmit, formState: {errors, isSubmitSuccessful}} = useForm<GarageActionPayload>({
     defaultValues: {
       licensePlate: '',
@@ -29,7 +27,6 @@ export const CheckinForm = ({isCheckinSuccessful, onSubmit}: Props) => {
   useEffect(() => {
     if (isCheckinSuccessful && isSubmitSuccessful) {
       reset();
-      setDefaultCheckinTime(dayjs());
       setValue('timestamp', dayjs(), {shouldTouch: true});
     }
   }, [isCheckinSuccessful, isSubmitSuccessful]);
@@ -56,12 +53,12 @@ export const CheckinForm = ({isCheckinSuccessful, onSubmit}: Props) => {
           <Controller
             name='timestamp'
             control={control}
-            defaultValue={defaultCheckinTime}
+            defaultValue={dayjs()}
             render={({ field }) => (
               <DatePicker
                 {...field}
                 showTime
-                format={dateTimeFormat}
+                format='YYYY-MM-DD HH:mm:ss'
                 placeholder="Select date"
               />
             )}
