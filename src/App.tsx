@@ -32,7 +32,7 @@ type CheckoutResult = {
 }
 
 function App() {
-  const [garage, checkin, checkout] = useGarageReducer({
+  const {garage, checkin, checkout, previewFees} = useGarageReducer({
     totalSpots: 3,
     occupants: [],
     }, feeCalculator);
@@ -107,6 +107,7 @@ function App() {
         setShouldShowCheckoutModal(true);
       }
     }}
+    previewFees={previewFees}
   />;
 
   return (

@@ -4,12 +4,12 @@ import {z} from "zod";
 import {DatePicker, Input, Form, Typography} from "antd";
 import dayjs, {Dayjs} from "dayjs";
 import {GarageActionPayload} from "../../hooks/use-garage-reducer.ts";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 
 type Props = {
   isCheckoutSuccessful: boolean,
   onSubmit: (payload: GarageActionPayload) => void,
-  feeCalculator: (checkin: Dayjs, checkout: Dayjs) => number,
+  previewFees: (licensePlate: string, checkoutTime: Dayjs) => number;
 };
 
 const checkoutFormValidationSchema = z.object({
@@ -17,13 +17,31 @@ const checkoutFormValidationSchema = z.object({
   timestamp: z.custom<Dayjs>((val) => val instanceof dayjs, 'Invalid date'),
 });
 
-export const CheckoutForm = ({isCheckoutSuccessful, onSubmit}: Props) => {
-  const {setValue, control, reset, handleSubmit, formState: {errors, isSubmitSuccessful}} = useForm<GarageActionPayload>({
+const currencyFormatter = new Intl.NumberFormat('en-CA', {
+  style: 'currency',
+  currency: 'CAD',
+});
+
+export const CheckoutForm = ({isCheckoutSuccessful, onSubmit, previewFees}: Props) => {
+  const {watch, setValue, control, reset, handleSubmit, formState: {errors, isSubmitSuccessful}} = useForm<GarageActionPayload>({
     defaultValues: {
       licensePlate: '',
     },
     resolver: zodResolver(checkoutFormValidationSchema),
   });
+
+  const licensePlate = watch('licensePlate');
+  const checkoutTime = watch('timestamp');
+  const [fees, setFees] = useState<number | null>(null);
+
+  useEffect(() => {
+    try {
+      const newFees = previewFees(licensePlate, checkoutTime);
+      setFees(newFees);
+    } catch {
+      setFees(null);
+    }
+  }, [licensePlate, checkoutTime]);
 
   useEffect(() => {
     if (isCheckoutSuccessful && isSubmitSuccessful) {
@@ -68,7 +86,7 @@ export const CheckoutForm = ({isCheckoutSuccessful, onSubmit}: Props) => {
         {errors.timestamp && <p>{errors.timestamp.message}</p>}
       </div>
       <div style={{textAlign: 'left'}}>
-        <Typography.Text>Tacos</Typography.Text>
+        <Typography.Text>Fees: {fees === null ? '--' : currencyFormatter.format(fees)}</Typography.Text>
       </div>
 
       <button>Save</button>

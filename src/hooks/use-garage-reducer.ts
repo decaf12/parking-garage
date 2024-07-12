@@ -15,6 +15,7 @@ export type GarageState = {
 enum GarageUpdate {
   CHECK_IN = 'CHECK_IN',
   CHECK_OUT = 'CHECK_OUT',
+  VIEW_DETAILS = 'VIEW_DETAILS',
 }
 
 export type CheckedOutCar = ParkingSpot & {
@@ -87,13 +88,13 @@ const reducer = (state: GarageState, action: GarageAction) => {
 export const useGarageReducer = (
   initialState: GarageState,
   feeCalculator: (checkin: Dayjs, checkout: Dayjs) => number,
-) : [GarageState, (payload: GarageActionPayload) => ParkingSpot, (payload: GarageActionPayload) => CheckedOutCar] => {
+) => {
   validateGarageState(initialState)
 
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [garage, dispatch] = useReducer(reducer, initialState);
 
   const checkin = (payload: GarageActionPayload): ParkingSpot => {
-    if (state.occupants.length >= state.totalSpots) {
+    if (garage.occupants.length >= garage.totalSpots) {
       throw new Error('No more spots.');
     }
 
@@ -107,7 +108,7 @@ export const useGarageReducer = (
       throw new Error('Missing check in time.');
     }
 
-    const existingCar = state.occupants.find((spot) => spot.licensePlate === licensePlate);
+    const existingCar = garage.occupants.find((spot) => spot.licensePlate === licensePlate);
     if (existingCar) {
       throw new Error('This car is already parked here.');
     }
@@ -126,7 +127,7 @@ export const useGarageReducer = (
   const checkout = (payload: GarageActionPayload): CheckedOutCar => {
     const {licensePlate, timestamp: checkoutTime} = payload;
 
-    const spot = state.occupants.find((spot) => spot.licensePlate === licensePlate);
+    const spot = garage.occupants.find((spot) => spot.licensePlate === licensePlate);
     if (!spot) {
       throw new Error('No such car is parked here.');
     }
@@ -150,5 +151,13 @@ export const useGarageReducer = (
     };
   };
 
-  return [state, checkin, checkout];
+  const previewFees = (licensePlate: string, checkoutTime: Dayjs): number => {
+    const spot = garage.occupants.find((spot) => spot.licensePlate === licensePlate);
+    if (!spot) {
+      throw new Error('Car not found.');
+    }
+
+    return feeCalculator(spot.checkinTime, checkoutTime);
+  }
+  return {garage, checkin, checkout, previewFees};
 };
