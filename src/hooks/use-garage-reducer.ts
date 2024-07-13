@@ -126,6 +126,13 @@ export const useGarageReducer = (
 
   const checkout = (payload: GarageActionPayload): CheckedOutCar => {
     const {licensePlate, timestamp: checkoutTime} = payload;
+    if (!licensePlate) {
+      throw new Error('Missing license plate.');
+    }
+
+    if (!checkoutTime) {
+      throw new Error('Missing check out time.');
+    }
 
     const spot = garage.occupants.find((spot) => spot.licensePlate === licensePlate);
     if (!spot) {
@@ -133,10 +140,9 @@ export const useGarageReducer = (
     }
 
     const {checkinTime} = spot;
-    if (!checkoutTime.isAfter(checkinTime)) {
-      throw new Error('Checkout must take place after checkin.');
+    if (checkoutTime.isBefore(checkinTime)) {
+      throw new Error('Checkout must not take place before checkin.');
     }
-
 
     dispatch({
       type: GarageUpdate.CHECK_OUT,
