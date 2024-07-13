@@ -3,8 +3,8 @@ import {Card} from "antd";
 
 export const ParkingSpotDetailCard = ({ parkingSpot }: {parkingSpot: ParkingSpot}) => {
   return (
-    <Card title={`License: ${parkingSpot.licensePlate}`}>
-      <p>Entry time: {parkingSpot.checkinTime.format('YYYY-MM-DD HH:mm:ss')}</p>
+    <Card data-testid='detailsCardLicensePlate' title={`License: ${parkingSpot.licensePlate}`}>
+      <p data-testid='detailsCardEntryTime'>Entry time: {parkingSpot.checkinTime.format('YYYY-MM-DD HH:mm:ss')}</p>
     </Card>
   );
 };
