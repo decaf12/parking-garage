@@ -13,7 +13,7 @@ const licensePlateComparator = (car1: ParkingSpot, car2: ParkingSpot) => car1.li
 
 describe('Initialization validation', () => {
   it('throws if there are too many occupants', () => {
-    expect(() => renderHook(() => useGarageReducer({
+    expect(() => useGarageReducer({
       totalSpots: 1,
       occupants: [
         {
@@ -25,11 +25,11 @@ describe('Initialization validation', () => {
           checkinTime: dayjs('2024-01-02 00:00:00'),
         },
       ],
-    }, feeCalculatorMock))).toThrow('Too many cars for that number of spots.');
+    }, feeCalculatorMock)).toThrow('Too many cars for that number of spots.');
   });
 
   it('throws if any occupant is missing its license plate', () => {
-    expect(() => renderHook(() => useGarageReducer({
+    expect(() => useGarageReducer({
       totalSpots: 1,
       occupants: [
         {
@@ -37,7 +37,7 @@ describe('Initialization validation', () => {
           checkinTime: dayjs('2024-01-01 00:00:00'),
         },
       ],
-    }, feeCalculatorMock))).toThrow('Missing license plate.');
+    }, feeCalculatorMock)).toThrow('Missing license plate.');
   });
 });
 describe('Check in', () => {
@@ -133,8 +133,8 @@ describe('Check in', () => {
       return result.current.checkin(payload);
     });
 
-    expect(actualResult).toEqual(correctResult);
-    expect(result.current.garage.occupants).toEqual([correctResult]);
+    expect(actualResult).toStrictEqual(correctResult);
+    expect(result.current.garage.occupants).toStrictEqual([correctResult]);
     expect(result.current.garage.totalSpots).toBe(2);
   });
 
@@ -171,7 +171,7 @@ describe('Check in', () => {
         return result.current.checkin(car);
       });
 
-      expect(actualResult).toEqual(correctResult);
+      expect(actualResult).toStrictEqual(correctResult);
       expect(result.current.garage.totalSpots).toBe(3);
 
       correctOccupants.push(correctResult);
@@ -179,7 +179,7 @@ describe('Check in', () => {
       const actualOccupantsSorted = result.current.garage.occupants.toSorted(licensePlateComparator);
       const correctOccupantsSorted = correctOccupants.toSorted(licensePlateComparator);
 
-      expect(actualOccupantsSorted).toEqual(correctOccupantsSorted);
+      expect(actualOccupantsSorted).toStrictEqual(correctOccupantsSorted);
     }
 
     await checkCarCheckin(2);
