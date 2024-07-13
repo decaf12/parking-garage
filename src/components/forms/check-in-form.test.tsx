@@ -26,7 +26,7 @@ afterEach(cleanup);
 describe('Render', () => {
   it('should show an empty license plate input and the current timestamp', () => {
     MockDate.set('2024-01-01 12:34:56');
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={(payload) => {}}/>)
+    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={() => {}}/>)
     const licensePlateField = form.getByTestId('checkinLicensePlate');
     const timestampField = form.getByTestId('checkinTimestamp');
     expect(licensePlateField.value).toBe('');
@@ -41,7 +41,7 @@ describe('Render', () => {
 
   it('should allow edits to license plate and timestamp', async () => {
     const user = userEvent.setup();
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={(payload) => {}}/>)
+    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={() => {}}/>)
     const licensePlateField = form.getByTestId('checkinLicensePlate');
     const timestampField = form.getByTestId('checkinTimestamp');
 
@@ -58,10 +58,10 @@ describe('Render', () => {
     expect(checkinTimeErrMsg).toBeNull();
   });
 
-  it('should submit valid input', async () => {
+  it('should submit valid input and clear all fields if inputs pass business logic validation', async () => {
     MockDate.set('2024-07-01 11:12:13');
     const user = userEvent.setup();
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={(payload) => {}}/>)
+    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={() => {}}/>)
     const licensePlateField = form.getByTestId('checkinLicensePlate');
     const timestampField = form.getByTestId('checkinTimestamp');
 
@@ -82,10 +82,34 @@ describe('Render', () => {
     MockDate.reset();
   });
 
+  it('should not clear the fields if inputs pass formating validation but not business logic validaiton', async () => {
+    MockDate.set('2024-07-01 11:12:13');
+    const user = userEvent.setup();
+    const form = render(<CheckinForm isCheckinSuccessful={false} onSubmit={() => {}}/>)
+    const licensePlateField = form.getByTestId('checkinLicensePlate');
+    const timestampField = form.getByTestId('checkinTimestamp');
+
+    await user.type(licensePlateField, 'tacos');
+    await user.clear(timestampField);
+    await user.type(timestampField, '1234-01-23 23:34:45');
+
+    const saveButton = form.getByTestId('checkinSave');
+    await user.click(saveButton);
+
+    expect(licensePlateField.value).toBe('tacos');
+    expect(dayjs(timestampField.value).isSame(dayjs('1234-01-23 23:34:45'))).toBe(true);
+
+    const licensePlateErrMsg = form.queryByTestId('checkinLicensePlateErrMsg');
+    const checkinTimeErrMsg = form.queryByTestId('checkinTimeErrMsg');
+    expect(licensePlateErrMsg).toBeNull();
+    expect(checkinTimeErrMsg).toBeNull();
+    MockDate.reset();
+  });
+
   it('should default the timestamp to the current time', async () => {
     MockDate.set('2024-07-01 11:12:13');
     const user = userEvent.setup();
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={(payload) => {}}/>)
+    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={() => {}}/>)
     const licensePlateField = form.getByTestId('checkinLicensePlate');
     const timestampField = form.getByTestId('checkinTimestamp');
 
@@ -103,7 +127,7 @@ describe('Render', () => {
   it('should show error messages for invalid input', async () => {
     MockDate.set('2024-07-01 11:12:13');
     const user = userEvent.setup();
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={(payload) => {}}/>)
+    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={() => {}}/>)
 
     const clearTimestampButton = form.container.querySelector('span[role="button"]');
     expect(clearTimestampButton).not.toBeNull();
@@ -122,7 +146,7 @@ describe('Render', () => {
   it('should reset all inputs and and error messages upon clicking reset', async () => {
     MockDate.set('2024-07-01 11:12:13');
     const user = userEvent.setup();
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={(payload) => {}}/>)
+    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={() => {}}/>)
     const licensePlateField = form.getByTestId('checkinLicensePlate');
     const timestampField = form.getByTestId('checkinTimestamp');
 
