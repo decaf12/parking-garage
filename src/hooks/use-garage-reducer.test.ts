@@ -53,7 +53,7 @@ describe('Check in', () => {
     };
 
     expect(() => act(() => {
-      return result.current[1](payload);
+      return result.current.checkin(payload);
     })).toThrow('Missing license plate.');
   });
 
@@ -69,7 +69,7 @@ describe('Check in', () => {
 
     expect(() => act(() => {
       // @ts-ignore
-      return result.current[1](payload);
+      return result.current.checkin(payload);
     })).toThrow('Missing check in time.');
   });
 
@@ -89,7 +89,7 @@ describe('Check in', () => {
     }, feeCalculatorMock));
 
     expect(() =>act(() => {
-      return result.current[1](car);
+      return result.current.checkin(car);
     })).toThrow();
   });
 
@@ -110,7 +110,7 @@ describe('Check in', () => {
     };
 
     expect(() => act(() => {
-      return result.current[1](car2);
+      return result.current.checkin(car2);
     })).toThrow('No more spots.');
   });
 
@@ -130,12 +130,12 @@ describe('Check in', () => {
     }
 
     const actualResult = await act(() => {
-      return result.current[1](payload);
+      return result.current.checkin(payload);
     });
 
     expect(actualResult).toEqual(correctResult);
-    expect(result.current[0].occupants).toEqual([correctResult]);
-    expect(result.current[0].totalSpots).toBe(2);
+    expect(result.current.garage.occupants).toEqual([correctResult]);
+    expect(result.current.garage.totalSpots).toBe(2);
   });
 
   it('Can check in multiple cars.', async () => {
@@ -168,15 +168,15 @@ describe('Check in', () => {
       }
 
       const actualResult = await act(() => {
-        return result.current[1](car);
+        return result.current.checkin(car);
       });
 
       expect(actualResult).toEqual(correctResult);
-      expect(result.current[0].totalSpots).toBe(3);
+      expect(result.current.garage.totalSpots).toBe(3);
 
       correctOccupants.push(correctResult);
 
-      const actualOccupantsSorted = result.current[0].occupants.toSorted(licensePlateComparator);
+      const actualOccupantsSorted = result.current.garage.occupants.toSorted(licensePlateComparator);
       const correctOccupantsSorted = correctOccupants.toSorted(licensePlateComparator);
 
       expect(actualOccupantsSorted).toEqual(correctOccupantsSorted);
