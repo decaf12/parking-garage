@@ -287,7 +287,7 @@ describe('Check out', () => {
     })).toThrow('No such car is parked here.');
   });
 
-  it('can check out one car.', async () => {
+  it('can check out if checkout time is the same as checkin time.', async () => {
     const car1 = {
       licensePlate: 'CAR1',
         checkinTime: dayjs('2024-01-01 00:00:00'),
@@ -304,7 +304,7 @@ describe('Check out', () => {
 
     const payload = {
       licensePlate: car1.licensePlate,
-      timestamp: dayjs('2024-01-01 00:00:30'),
+      timestamp: car1.checkinTime,
     };
 
     const correctResult = {
@@ -322,6 +322,44 @@ describe('Check out', () => {
     expect(result.current.garage.occupants).toStrictEqual([car2]);
     expect(result.current.garage.totalSpots).toBe(2);
   });
+
+  it('can check out one car.', async () => {
+    const car1 = {
+      licensePlate: 'CAR1',
+      checkinTime: dayjs('2024-01-01 00:00:00'),
+    };
+    const car2 = {
+      licensePlate: 'CAR2',
+      checkinTime: dayjs('2024-04-02 12:34:56'),
+    };
+
+    const { result } = renderHook(() => useGarageReducer({
+      totalSpots: 2,
+      occupants: [car1, car2],
+    }, feeCalculatorMock));
+
+    const payload = {
+      licensePlate: car1.licensePlate,
+      timestamp: dayjs('2024-01-01 00:00:30'),
+    };
+
+    const correctResult = {
+      licensePlate: car1.licensePlate,
+      checkinTime: car1.checkinTime,
+      checkoutTime: payload.timestamp,
+      fees: feeCalculatorMock(car1.checkinTime, payload.timestamp),
+    };
+
+    const actualResult = await act(() => {
+      return result.current.checkout(payload);
+    });
+
+    expect(actualResult).toStrictEqual(correctResult);
+    expect(result.current.garage.occupants).toStrictEqual([car2]);
+    expect(result.current.garage.totalSpots).toBe(2);
+  });
+
+
 
   it('can check out multiple cars.', async () => {
     const car1: ParkingSpot = {
