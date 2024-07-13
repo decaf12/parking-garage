@@ -4,7 +4,7 @@ import {z} from "zod";
 import {DatePicker, Form, Input} from "antd";
 import dayjs, {Dayjs} from "dayjs";
 import {GarageActionPayload} from "../../hooks/use-garage-reducer.ts";
-import {useEffect, useRef, useState} from "react";
+import {useEffect} from "react";
 
 type Props = {
   isCheckinSuccessful: boolean,
@@ -12,8 +12,8 @@ type Props = {
 };
 
 const checkinFormValidationSchema = z.object({
-  licensePlate: z.string().min(1, {message: 'License place is required.'}),
-  timestamp: z.custom<Dayjs>((val) => val instanceof dayjs, 'Invalid date'),
+  licensePlate: z.string().min(1, {message: 'License plate is required.'}),
+  timestamp: z.custom<Dayjs>((val) => val instanceof dayjs, 'Invalid date.'),
 });
 
 export const CheckinForm = ({isCheckinSuccessful, onSubmit}: Props) => {
@@ -71,12 +71,13 @@ export const CheckinForm = ({isCheckinSuccessful, onSubmit}: Props) => {
 
         <button data-testid='checkinSave'>Save</button>
         <button
-          data-testid='checkinClear'
+          data-testid='checkinReset'
           type='button'
           onClick={() => {
-          reset();
-        }}>
-          Clear
+            reset({timestamp: dayjs()});
+          }}
+        >
+          Reset
         </button>
       </form>
     </>
