@@ -1,8 +1,8 @@
-import {afterEach, describe, it, expect, beforeAll, vi, beforeEach} from "vitest";
+import {afterEach, describe, it, expect, beforeAll, vi} from "vitest";
 import {cleanup, render} from "@testing-library/react";
 import MockDate from 'mockdate';
-import {CheckinForm} from "./check-in-form.tsx";
-import dayjs from "dayjs";
+import {CheckoutForm} from "./check-out-form.tsx";
+import dayjs, {Dayjs} from "dayjs";
 import * as matchers from '@testing-library/jest-dom/matchers';
 import userEvent from "@testing-library/user-event";
 
@@ -22,17 +22,15 @@ beforeAll(() => {
     })),
   });
 });
+afterEach(cleanup);
 
-beforeEach(() => {
-  MockDate.set('2024-07-01 11:12:13');
-});
-afterEach(() => {
-  MockDate.reset();
-  cleanup();
-});
+const previewFeesMock = (licensePlate: string, checkoutTime: Dayjs) => {
+  return 1;
+};
 describe('Render', () => {
   it('should show an empty license plate input and the current timestamp', () => {
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={(payload) => {}}/>)
+    MockDate.set('2024-01-01 12:34:56');
+    const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={(payload) => {}}/>)
     const licensePlateField = form.getByTestId('checkinLicensePlate');
     const timestampField = form.getByTestId('checkinTimestamp');
     expect(licensePlateField.value).toBe('');
@@ -42,11 +40,12 @@ describe('Render', () => {
     const checkinTimeErrMsg = form.queryByTestId('checkinTimeErrMsg');
     expect(licensePlateErrMsg).toBeNull();
     expect(checkinTimeErrMsg).toBeNull();
+    MockDate.reset();
   });
 
   it('should allow edits to license plate and timestamp', async () => {
     const user = userEvent.setup();
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={(payload) => {}}/>)
+    const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={(payload) => {}}/>)
     const licensePlateField = form.getByTestId('checkinLicensePlate');
     const timestampField = form.getByTestId('checkinTimestamp');
 
@@ -64,8 +63,9 @@ describe('Render', () => {
   });
 
   it('should submit valid input', async () => {
+    MockDate.set('2024-07-01 11:12:13');
     const user = userEvent.setup();
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={(payload) => {}}/>)
+    const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={(payload) => {}}/>)
     const licensePlateField = form.getByTestId('checkinLicensePlate');
     const timestampField = form.getByTestId('checkinTimestamp');
 
@@ -83,11 +83,13 @@ describe('Render', () => {
     const checkinTimeErrMsg = form.queryByTestId('checkinTimeErrMsg');
     expect(licensePlateErrMsg).toBeNull();
     expect(checkinTimeErrMsg).toBeNull();
+    MockDate.reset();
   });
 
   it('should default the timestamp to the current time', async () => {
+    MockDate.set('2024-07-01 11:12:13');
     const user = userEvent.setup();
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={(payload) => {}}/>)
+    const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={(payload) => {}}/>)
     const licensePlateField = form.getByTestId('checkinLicensePlate');
     const timestampField = form.getByTestId('checkinTimestamp');
 
@@ -99,11 +101,13 @@ describe('Render', () => {
 
     const checkinTimeErrMsg = form.queryByTestId('checkinTimeErrMsg');
     expect(checkinTimeErrMsg).toBeNull();
+    MockDate.reset();
   });
 
   it('should show error messages for invalid input', async () => {
+    MockDate.set('2024-07-01 11:12:13');
     const user = userEvent.setup();
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={() => {}}/>)
+    const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={() => {}}/>)
 
     const clearTimestampButton = form.container.querySelector('span[role="button"]');
     expect(clearTimestampButton).not.toBeNull();
@@ -116,11 +120,13 @@ describe('Render', () => {
     const checkinTimeErrMsg = form.getByTestId('checkinTimeErrMsg');
     expect(licensePlateErrMsg.textContent).toBe('License plate is required.');
     expect(checkinTimeErrMsg.textContent).toBe('Invalid date.');
+    MockDate.reset();
   });
 
   it('should reset all inputs and and error messages upon clicking reset', async () => {
+    MockDate.set('2024-07-01 11:12:13');
     const user = userEvent.setup();
-    const form = render(<CheckinForm isCheckinSuccessful={true} onSubmit={() => {}}/>)
+    const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={() => {}}/>)
     const licensePlateField = form.getByTestId('checkinLicensePlate');
     const timestampField = form.getByTestId('checkinTimestamp');
 
@@ -142,5 +148,6 @@ describe('Render', () => {
 
     await user.click(resetButton);
     expect(form.queryByTestId('checkinLicensePlateErrMsg')).toBeNull();
+    MockDate.reset();
   });
 });
