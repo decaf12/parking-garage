@@ -114,7 +114,7 @@ function App() {
 
   return (
     <>
-      <div>{freeParkingSpotCount} parking spot{(freeParkingSpotCount !== 1) && 's'} left</div>
+      <div data-testid='parkingSpotCounter'>{freeParkingSpotCount} parking spot{(freeParkingSpotCount !== 1) && 's'} left</div>
       <Collapse
         data-testid='checkinCollapse'
         {...freeParkingSpotCount ? {} : {collapsible: "disabled"}}
