@@ -1,4 +1,4 @@
-import {afterEach, describe, it, expect, beforeAll, vi} from "vitest";
+import {afterEach, describe, it, expect, beforeAll, vi, beforeEach} from "vitest";
 import {cleanup, render} from "@testing-library/react";
 import MockDate from 'mockdate';
 import {CheckoutForm} from "./check-out-form.tsx";
@@ -22,32 +22,37 @@ beforeAll(() => {
     })),
   });
 });
-afterEach(cleanup);
+
+beforeEach(() => {
+  MockDate.set('2024-07-01 11:12:13');
+});
+afterEach(() => {
+  MockDate.reset();
+  cleanup();
+});
 
 const previewFeesMock = (licensePlate: string, checkoutTime: Dayjs) => {
   return 1;
 };
 describe('Render', () => {
   it('should show an empty license plate input and the current timestamp', () => {
-    MockDate.set('2024-01-01 12:34:56');
     const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={(payload) => {}}/>)
-    const licensePlateField = form.getByTestId('checkinLicensePlate');
-    const timestampField = form.getByTestId('checkinTimestamp');
+    const licensePlateField = form.getByTestId('checkoutLicensePlate');
+    const timestampField = form.getByTestId('checkoutTimestamp');
     expect(licensePlateField.value).toBe('');
     expect(dayjs(timestampField.value).isSame(dayjs())).toBe(true);
 
-    const licensePlateErrMsg = form.queryByTestId('checkinLicensePlateErrMsg');
+    const licensePlateErrMsg = form.queryByTestId('checkoutLicensePlateErrMsg');
     const checkinTimeErrMsg = form.queryByTestId('checkinTimeErrMsg');
     expect(licensePlateErrMsg).toBeNull();
     expect(checkinTimeErrMsg).toBeNull();
-    MockDate.reset();
   });
 
   it('should allow edits to license plate and timestamp', async () => {
     const user = userEvent.setup();
     const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={(payload) => {}}/>)
-    const licensePlateField = form.getByTestId('checkinLicensePlate');
-    const timestampField = form.getByTestId('checkinTimestamp');
+    const licensePlateField = form.getByTestId('checkoutLicensePlate');
+    const timestampField = form.getByTestId('checkoutTimestamp');
 
     await user.type(licensePlateField, 'tacos');
     await user.clear(timestampField);
@@ -56,7 +61,7 @@ describe('Render', () => {
     expect(licensePlateField.value).toBe('tacos');
     expect(dayjs(timestampField.value).isSame(dayjs('1234-01-23 23:34:45'))).toBe(true);
 
-    const licensePlateErrMsg = form.queryByTestId('checkinLicensePlateErrMsg');
+    const licensePlateErrMsg = form.queryByTestId('checkoutLicensePlateErrMsg');
     const checkinTimeErrMsg = form.queryByTestId('checkinTimeErrMsg');
     expect(licensePlateErrMsg).toBeNull();
     expect(checkinTimeErrMsg).toBeNull();
@@ -66,8 +71,8 @@ describe('Render', () => {
     MockDate.set('2024-07-01 11:12:13');
     const user = userEvent.setup();
     const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={(payload) => {}}/>)
-    const licensePlateField = form.getByTestId('checkinLicensePlate');
-    const timestampField = form.getByTestId('checkinTimestamp');
+    const licensePlateField = form.getByTestId('checkoutLicensePlate');
+    const timestampField = form.getByTestId('checkoutTimestamp');
 
     await user.type(licensePlateField, 'tacos');
     await user.clear(timestampField);
@@ -79,7 +84,7 @@ describe('Render', () => {
     expect(licensePlateField.value).toBe('');
     expect(dayjs(timestampField.value).isSame(dayjs('2024-07-01 11:12:13'))).toBe(true);
 
-    const licensePlateErrMsg = form.queryByTestId('checkinLicensePlateErrMsg');
+    const licensePlateErrMsg = form.queryByTestId('checkoutLicensePlateErrMsg');
     const checkinTimeErrMsg = form.queryByTestId('checkinTimeErrMsg');
     expect(licensePlateErrMsg).toBeNull();
     expect(checkinTimeErrMsg).toBeNull();
@@ -90,8 +95,8 @@ describe('Render', () => {
     MockDate.set('2024-07-01 11:12:13');
     const user = userEvent.setup();
     const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={(payload) => {}}/>)
-    const licensePlateField = form.getByTestId('checkinLicensePlate');
-    const timestampField = form.getByTestId('checkinTimestamp');
+    const licensePlateField = form.getByTestId('checkoutLicensePlate');
+    const timestampField = form.getByTestId('checkoutTimestamp');
 
     await user.type(licensePlateField, 'tacos');
     await user.clear(timestampField);
@@ -116,7 +121,7 @@ describe('Render', () => {
     const saveButton = form.getByTestId('checkinSave');
     await user.click(saveButton);
 
-    const licensePlateErrMsg = form.getByTestId('checkinLicensePlateErrMsg');
+    const licensePlateErrMsg = form.getByTestId('checkoutLicensePlateErrMsg');
     const checkinTimeErrMsg = form.getByTestId('checkinTimeErrMsg');
     expect(licensePlateErrMsg.textContent).toBe('License plate is required.');
     expect(checkinTimeErrMsg.textContent).toBe('Invalid date.');
@@ -127,8 +132,8 @@ describe('Render', () => {
     MockDate.set('2024-07-01 11:12:13');
     const user = userEvent.setup();
     const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={() => {}}/>)
-    const licensePlateField = form.getByTestId('checkinLicensePlate');
-    const timestampField = form.getByTestId('checkinTimestamp');
+    const licensePlateField = form.getByTestId('checkoutLicensePlate');
+    const timestampField = form.getByTestId('checkoutTimestamp');
 
     await user.clear(timestampField);
     await user.type(timestampField, '1234-01-23 23:34:45');
@@ -139,15 +144,15 @@ describe('Render', () => {
     expect(licensePlateField.value).toBe('');
     expect(dayjs(timestampField.value).isSame(dayjs('2024-07-01 11:12:13'))).toBe(true);
 
-    expect(form.queryByTestId('checkinLicensePlateErrMsg')).toBeNull();
+    expect(form.queryByTestId('checkoutLicensePlateErrMsg')).toBeNull();
     expect(form.queryByTestId('checkinTimeErrMsg')).toBeNull();
 
     const saveButton = form.getByTestId('checkinSave');
     await user.click(saveButton);
-    expect(form.getByTestId('checkinLicensePlateErrMsg').textContent).toBe('License plate is required.');
+    expect(form.getByTestId('checkoutLicensePlateErrMsg').textContent).toBe('License plate is required.');
 
     await user.click(resetButton);
-    expect(form.queryByTestId('checkinLicensePlateErrMsg')).toBeNull();
+    expect(form.queryByTestId('checkoutLicensePlateErrMsg')).toBeNull();
     MockDate.reset();
   });
 });
