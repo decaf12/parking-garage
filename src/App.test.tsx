@@ -35,6 +35,9 @@ describe('Render', () => {
   it('Shows all sections collapsed, with only checkin expandable.', async () => {
     const app = render(<App/>);
 
+    const parkingSpotCounter = app.getByTestId('parkingSpotCounter');
+    expect(parkingSpotCounter.textContent).toBe('3 parking spots left');
+
     const checkinCollapse = app.getByTestId('checkinCollapse').querySelector('div[class^="ant-collapse-item"]');
     const checkoutCollapse = app.getByTestId('checkoutCollapse').querySelector('div[class^="ant-collapse-item"]');
     const detailsCollapse = app.getByTestId('detailsCollapse').querySelector('div[class^="ant-collapse-item"]');
