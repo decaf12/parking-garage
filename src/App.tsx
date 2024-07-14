@@ -70,6 +70,7 @@ function App() {
 
 
   const checkinForm = <CheckinForm
+    data-testid='checkinForm'
     isCheckinSuccessful={checkinResult.success !== false}
     onSubmit={(payload) => {
       try {
@@ -90,6 +91,7 @@ function App() {
   />;
 
   const checkoutForm = <CheckoutForm
+    data-testid='checkoutForm'
     isCheckoutSuccessful={checkoutResult.success !== false}
     onSubmit={(payload) => {
       try {
@@ -114,6 +116,7 @@ function App() {
     <>
       <div>{freeParkingSpotCount} parking spot{(freeParkingSpotCount !== 1) && 's'} left</div>
       <Collapse
+        data-testid='checkinCollapse'
         {...freeParkingSpotCount ? {} : {collapsible: "disabled"}}
         activeKey={activeCheckinKey}
         onChange={() => setActiveCheckinKey(activeCheckinKey.length ? [] : ['checkinForm'])}
@@ -142,6 +145,7 @@ function App() {
         ]}
         />
       <Collapse
+        data-testid='checkoutCollapse'
         {...garage.occupants.length ? {} : {collapsible: "disabled"}}
         activeKey={activeCheckoutKey}
         onChange={() => setActiveCheckoutKey(activeCheckoutKey.length ? [] : ['checkoutForm'])}
@@ -170,6 +174,7 @@ function App() {
         ]}
       />
       <Collapse
+        data-testid='detailsCollapse'
         {...garage.occupants.length ? {} : {collapsible: "disabled"}}
         activeKey={activeDetailsKey}
         onChange={() => setActiveDetailsKey(activeDetailsKey.length ? [] : ['detailsForm'])}
