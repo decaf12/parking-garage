@@ -60,11 +60,11 @@ export const CheckoutForm = ({isCheckoutSuccessful, onSubmit, previewFees}: Prop
             name='licensePlate'
             control={control}
             render={({ field }) => (
-              <Input {...field}/>
+              <Input {...field} data-testid='checkoutLicensePlate'/>
             )}
           />
         </Form.Item>
-        {errors.licensePlate && <p>{errors.licensePlate.message}</p>}
+        {errors.licensePlate && <p data-testid='checkoutLicensePlateErrMsg'>{errors.licensePlate.message}</p>}
       </div>
 
       <div>
@@ -79,18 +79,25 @@ export const CheckoutForm = ({isCheckoutSuccessful, onSubmit, previewFees}: Prop
                 showTime
                 format='YYYY-MM-DD HH:mm:ss'
                 placeholder="Select date"
+                data-testid='checkoutTimestamp'
               />
             )}
           />
         </Form.Item>
-        {errors.timestamp && <p>{errors.timestamp.message}</p>}
+        {errors.timestamp && <p data-testid='checkoutTimeErrMsg'>{errors.timestamp.message}</p>}
       </div>
       <div style={{textAlign: 'left'}}>
-        <Typography.Text>Fees: {fees === null ? '--' : currencyFormatter.format(fees)}</Typography.Text>
+        <Typography.Text data-testid='checkoutFeePreview'>Fees: {fees === null ? '--' : currencyFormatter.format(fees)}</Typography.Text>
       </div>
 
-      <button>Save</button>
-      <button type='button' onClick={() => {reset()}}>Clear</button>
+      <button data-testid='checkoutSave'>Save</button>
+      <button
+        data-testid='checkoutReset'
+        type='button'
+        onClick={() => {reset()}}
+      >
+        Reset
+      </button>
     </form>
   );
 }
