@@ -67,8 +67,6 @@ function App() {
     }
   }, [freeParkingSpotCount]);
 
-
-
   const checkinForm = <CheckinForm
     data-testid='checkinForm'
     isCheckinSuccessful={checkinResult.success !== false}
@@ -177,7 +175,7 @@ function App() {
         data-testid='detailsCollapse'
         {...garage.occupants.length ? {} : {collapsible: "disabled"}}
         activeKey={activeDetailsKey}
-        onChange={() => setActiveDetailsKey(activeDetailsKey.length ? [] : ['detailsForm'])}
+        onChange={() => setActiveDetailsKey(activeDetailsKey.length ? [] : ['details'])}
         items={[
           {
             key: 'details',
