@@ -32,7 +32,11 @@ afterEach(() => {
 });
 
 const previewFeesMock = (licensePlate: string, checkoutTime: Dayjs) => {
-  return 1;
+  if (licensePlate === 'tacos') {
+    return 1;
+  }
+
+  throw new Error('No tacos');
 };
 describe('Render', () => {
   it('should show an empty license plate input and the current timestamp', () => {
@@ -146,5 +150,33 @@ describe('Render', () => {
 
     await user.click(resetButton);
     expect(form.queryByTestId('checkoutLicensePlateErrMsg')).toBeNull();
+  });
+
+  it('should show fee preview for valid inputs', async () => {
+    const user = userEvent.setup();
+    const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={() => {}}/>)
+    const licensePlateField = form.getByTestId('checkoutLicensePlate');
+    const timestampField = form.getByTestId('checkoutTimestamp');
+
+    await user.type(licensePlateField, 'tacos');
+    await user.clear(timestampField);
+    await user.type(timestampField, '1234-01-23 23:34:45');
+
+    const feePreview = form.getByTestId('checkoutFeePreview');
+    expect(feePreview.textContent).toBe('Fees: $1.00');
+  });
+
+  it('should show no fee preview for invalid inputs', async () => {
+    const user = userEvent.setup();
+    const form = render(<CheckoutForm previewFees={previewFeesMock} isCheckoutSuccessful={true} onSubmit={() => {}}/>)
+    const licensePlateField = form.getByTestId('checkoutLicensePlate');
+    const timestampField = form.getByTestId('checkoutTimestamp');
+
+    await user.type(licensePlateField, 'no tacos');
+    await user.clear(timestampField);
+    await user.type(timestampField, '1234-01-23 23:34:45');
+
+    const feePreview = form.getByTestId('checkoutFeePreview');
+    expect(feePreview.textContent).toBe('Fees: --');
   });
 });
