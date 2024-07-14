@@ -4,6 +4,7 @@ import {ParkingSpot} from "../../hooks/use-garage-reducer.ts";
 export const CheckInSuccessDialog = (props: { open: boolean, closeModal: () => void, spot: ParkingSpot }) => {
   const {licensePlate, checkinTime} = props.spot;
   return (<Modal
+    data-testid='checkinSuccess'
     title="Success"
     open={props.open}
     onOk={props.closeModal}
