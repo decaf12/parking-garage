@@ -94,7 +94,9 @@ export const CheckoutForm = ({isCheckoutSuccessful, onSubmit, previewFees}: Prop
       <button
         data-testid='checkoutReset'
         type='button'
-        onClick={() => {reset()}}
+        onClick={() => {
+          reset({timestamp: dayjs()});
+        }}
       >
         Reset
       </button>
