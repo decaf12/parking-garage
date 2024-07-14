@@ -13,8 +13,8 @@ type Props = {
 };
 
 const checkoutFormValidationSchema = z.object({
-  licensePlate: z.string().min(1, {message: 'License place is required.'}),
-  timestamp: z.custom<Dayjs>((val) => val instanceof dayjs, 'Invalid date'),
+  licensePlate: z.string().min(1, {message: 'License plate is required.'}),
+  timestamp: z.custom<Dayjs>((val) => val instanceof dayjs, 'Invalid date.'),
 });
 
 const currencyFormatter = new Intl.NumberFormat('en-CA', {
