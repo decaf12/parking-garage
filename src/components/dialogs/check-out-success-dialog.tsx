@@ -9,6 +9,7 @@ export const CheckOutSuccessDialog = (props: { open: boolean, closeModal: () => 
   const {licensePlate, checkinTime, checkoutTime, fees} = props.car;
   return (<Modal
     title="Success"
+    data-testid='checkoutSuccess'
     open={props.open}
     onOk={props.closeModal}
     onCancel={props.closeModal}
