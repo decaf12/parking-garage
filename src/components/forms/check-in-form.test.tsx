@@ -74,9 +74,15 @@ describe('Render', () => {
     await user.type(timestampField, '1234-01-23 23:34:45');
 
     const saveButton = form.getByTestId('checkinSave');
-    await user.click(saveButton);
+    await userEvent.click(saveButton);
 
     expect(licensePlateField.value).toBe('');
+    function sleep(ms: number) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    await (sleep(100));
+    console.info('checkin post-submit dayjs', timestampField.value);
     expect(dayjs(timestampField.value).isSame(dayjs('2024-07-01 11:12:13'))).toBe(true);
 
     const licensePlateErrMsg = form.queryByTestId('checkinLicensePlateErrMsg');
