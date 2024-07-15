@@ -72,7 +72,6 @@ describe('Render', () => {
 
     await user.type(checkinFormLicensePlate, 'car1');
     await user.click(checkinSave);
-    await user.click(app.getByText('OK', {selector: 'span'}));
 
     expect(parkingSpotCounter.textContent).toBe('2 parking spots left');
     expect(checkinCollapse?.className).toBe('ant-collapse-item ant-collapse-item-active');
@@ -85,7 +84,6 @@ describe('Render', () => {
 
     await user.type(checkinFormLicensePlate, 'car2');
     await user.click(checkinSave);
-    await user.click(app.getByText('OK', {selector: 'span'}));
 
     expect(parkingSpotCounter.textContent).toBe('1 parking spot left');
     expect(checkinCollapse?.className).toBe('ant-collapse-item ant-collapse-item-active');
@@ -98,7 +96,6 @@ describe('Render', () => {
 
     await user.type(checkinFormLicensePlate, 'car3');
     await user.click(checkinSave);
-    await user.click(app.getByText('OK', {selector: 'span'}));
 
     expect(parkingSpotCounter.textContent).toBe('0 parking spots left');
     expect(checkinCollapse?.className).toBe('ant-collapse-item ant-collapse-item-disabled');
@@ -110,7 +107,6 @@ describe('Render', () => {
     expect(detailsCollapseHeader?.textContent).toBe('Details');
 
     await user.click(app.getByText('Check out car', {selector: 'span'}));
-    await user.click(app.getByText('OK', {selector: 'span'}));
 
     const checkoutFormLicensePlate = app.getByTestId('checkoutLicensePlate');
     const checkoutSave = app.getByTestId('checkoutSave');
